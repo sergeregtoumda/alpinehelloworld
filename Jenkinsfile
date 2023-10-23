@@ -86,30 +86,30 @@ pipeline {
       }    
      
      stage('STAGING - Deploy app') {
-      agent any
-      when {
+     agent any
+     when {
               expression { GIT_BRANCH == 'origin/eazylabs' }
           }
-      steps {
+     steps {
           script {
             sh """
               echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json 
-              curl -X POST http://${STG_API_ENDPOINT} -H 'Content-Type: application/json'  --data-binary @data.json 
+              curl -X POST http://${STG_API_ENDPOINT}/staging -H 'Content-Type: application/json'  --data-binary @data.json 
             """
           }
         }
      }
 
      stage('PRODUCTION - Deploy app') {
-       when {
+     when {
               expression { GIT_BRANCH == 'origin/master' }
-            }
-      agent any
+          }
+     agent any
 
-      steps {
+     steps {
           script {
             sh """
-               curl -X POST http://${PROD_API_ENDPOINT} -H 'Content-Type: application/json' -d '{"your_name":"${APP_NAME}","container_image":"${CONTAINER_IMAGE}", "external_port":"${EXTERNAL_PORT}", "internal_port":"${INTERNAL_PORT}"}'
+               curl -X POST http://${PROD_API_ENDPOINT}/prod -H 'Content-Type: application/json' -d '{"your_name":"${APP_NAME}","container_image":"${CONTAINER_IMAGE}", "external_port":"${EXTERNAL_PORT}", "internal_port":"${INTERNAL_PORT}"}'
                """
           }
         }
@@ -117,11 +117,11 @@ pipeline {
   }
      
   post {
-       success {
+     success {
          slackSend (color: '#00FF00', message: "SERGE - SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) - PROD URL => http://${PROD_APP_ENDPOINT} , STAGING URL => http://${STG_APP_ENDPOINT}")
-         }
-      failure {
-            slackSend (color: '#FF0000', message: "SERGE - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-          }   
-    }     
+     }
+     failure {
+          slackSend (color: '#FF0000', message: "SERGE - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+     }   
+     }     
 }
