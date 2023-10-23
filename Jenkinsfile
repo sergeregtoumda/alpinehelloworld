@@ -37,88 +37,15 @@ pipeline {
                }
             }
        }
-       stage('Test image') {
-           agent any
-           steps {
-              script {
-                sh '''
-                    curl http://172.17.0.1:${PORT_EXPOSED} | grep -q "Hello world!"
-                '''
-              }
-           }
-      }
-      stage('Clean Container') {
-          agent any
-          steps {
-             script {
-               sh '''
-                 docker stop $IMAGE_NAME
-                 docker rm $IMAGE_NAME
-               '''
-             }
-          }
-     }
 
-      stage('Save Artefact') {
-          agent any
-          steps {
-             script {
-               sh '''
-                 docker save  ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG > /tmp/alpinehelloworld.tar                 
-               '''
-             }
-          }
-     }          
-          
-     stage ('Login and Push Image on docker hub') {
-          agent any
-        environment {
-           DOCKERHUB_PASSWORD  = credentials('dockerhub-credentials')
-        }            
-          steps {
-             script {
-               sh '''
-                   echo $DOCKERHUB_PASSWORD_PSW | docker login -u $ID_DOCKER --password-stdin
-                   docker push ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG
-               '''
-             }
-          }
-      }    
+      
      
-     stage('STAGING - Deploy app') {
-     agent any
-     steps {
-          script {
-            sh """
-              echo  {\\"your_name\\":\\"${APP_NAME}\\",\\"container_image\\":\\"${CONTAINER_IMAGE}\\", \\"external_port\\":\\"${EXTERNAL_PORT}\\", \\"internal_port\\":\\"${INTERNAL_PORT}\\"}  > data.json 
-              curl -X POST http://${STG_API_ENDPOINT}/staging -H 'Content-Type: application/json'  --data-binary @data.json 
-            """
+       post {
+          success {
+               slackSend (color: '#00FF00', message: "SERGE - SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) - PROD URL => http://${PROD_APP_ENDPOINT} , STAGING URL => http://${STG_APP_ENDPOINT}")
           }
-        }
-     }
-
-     stage('PRODUCTION - Deploy app') {
-     when {
-              expression { GIT_BRANCH == 'origin/test' }
-          }
-     agent any
-
-     steps {
-          script {
-            sh """
-               curl -X POST http://${PROD_API_ENDPOINT}/prod -H 'Content-Type: application/json' -d '{"your_name":"${APP_NAME}","container_image":"${CONTAINER_IMAGE}", "external_port":"${EXTERNAL_PORT}", "internal_port":"${INTERNAL_PORT}"}'
-               """
-          }
-        }
-     }
-  }
-     
-  post {
-     success {
-         slackSend (color: '#00FF00', message: "SERGE - SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) - PROD URL => http://${PROD_APP_ENDPOINT} , STAGING URL => http://${STG_APP_ENDPOINT}")
-     }
-     failure {
-          slackSend (color: '#FF0000', message: "SERGE - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-     }   
+          failure {
+               slackSend (color: '#FF0000', message: "SERGE - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+          }   
      }     
 }
