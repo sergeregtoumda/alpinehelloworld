@@ -88,7 +88,7 @@ pipeline {
      stage('STAGING - Deploy app') {
       agent any
       when {
-              expression { GIT_BRANCH == 'gitlab/eazylabs' }
+              expression { GIT_BRANCH == 'origin/eazylabs' }
           }
       steps {
           script {
@@ -102,7 +102,7 @@ pipeline {
 
      stage('PRODUCTION - Deploy app') {
        when {
-              expression { GIT_BRANCH == 'gitlab/master' }
+              expression { GIT_BRANCH == 'origin/master' }
             }
       agent any
 
