@@ -4,7 +4,7 @@ pipeline {
        IMAGE_NAME = "alpinehelloworld"
        IMAGE_TAG = "latest"
        // PORT_EXPOSED = "80" à paraméter dans le job obligatoirement
-       APP_NAME = "ulrich"
+       APP_NAME = "serge"
        STG_API_ENDPOINT = "ip10-0-4-4-ckr5ucp5aj7gqct7eho0-1993.direct.docker.labs.eazytraining.fr"
        STG_APP_ENDPOINT = "ip10-0-4-4-ckr5ucp5aj7gqct7eho0-80.direct.docker.labs.eazytraining.fr"
        PROD_API_ENDPOINT = "ip10-0-4-5-ckr5ucp5aj7gqct7eho0-1993.direct.docker.labs.eazytraining.fr"
