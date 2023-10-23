@@ -101,9 +101,6 @@ pipeline {
           }
 
           stage('PRODUCTION - Deploy app') {
-               when {
-                   expression { GIT_BRANCH == 'origin/test' }
-               }
                agent any
                steps {
                     script {
