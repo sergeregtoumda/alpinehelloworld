@@ -16,15 +16,15 @@ pipeline {
      }
      agent none
      stages {
-         stage('Build image') {
+          stage('Build image') {
              agent any
              steps {
                 script {
                   sh 'docker build -t ${ID_DOCKER}/$IMAGE_NAME:$IMAGE_TAG .'
                 }
              }
-        }
-        stage('Run container based on builded image') {
+          }
+          stage('Run container based on builded image') {
             agent any
             steps {
                script {
@@ -36,16 +36,17 @@ pipeline {
                  '''
                }
             }
-       }
+          }
 
       
      
-       post {
-          success {
-               slackSend (color: '#00FF00', message: "SERGE - SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) - PROD URL => http://${PROD_APP_ENDPOINT} , STAGING URL => http://${STG_APP_ENDPOINT}")
-          }
-          failure {
-               slackSend (color: '#FF0000', message: "SERGE - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-          }   
-     }     
+          post {
+               success {
+                    slackSend (color: '#00FF00', message: "SERGE - SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL}) - PROD URL => http://${PROD_APP_ENDPOINT} , STAGING URL => http://${STG_APP_ENDPOINT}")
+               }
+               failure {
+                    slackSend (color: '#FF0000', message: "SERGE - FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
+               }   
+          }     
+     }
 }
